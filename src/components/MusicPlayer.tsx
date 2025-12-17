@@ -1,39 +1,38 @@
 import { useEffect, useRef, useState } from 'react';
-import { Music, Play, Pause } from 'lucide-react';
+import { Music, Play } from 'lucide-react';
 
 const MusicPlayer = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
-    // Tenta tocar automaticamente quando o componente monta
-    const playAudio = async () => {
-      if (audioRef.current) {
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (error) {
-          console.log('Autoplay bloqueado. Clique para tocar:', error);
-          setIsPlaying(false);
-        }
+    const tryAutoplay = async () => {
+      if (!audioRef.current) return;
+
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        // Autoplay bloqueado pelo navegador (comportamento esperado)
+        setIsPlaying(false);
       }
     };
 
-    playAudio();
+    tryAutoplay();
   }, []);
 
   const togglePlay = async () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (error) {
-          console.error('Erro ao tocar música:', error);
-        }
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Erro ao tocar música:', error);
       }
     }
   };
@@ -51,6 +50,7 @@ const MusicPlayer = () => {
             <Play className="w-5 h-5 text-primary-foreground" />
           )}
         </div>
+
         <div className="hidden sm:block">
           <p className="text-xs text-muted-foreground">Nossa música</p>
           <p className="text-sm font-medium text-foreground">
@@ -58,15 +58,13 @@ const MusicPlayer = () => {
           </p>
         </div>
       </button>
+
       <audio
         ref={audioRef}
         loop
         preload="auto"
-      >
-        <source src="/src/img/music.mp4" type="audio/mp4" />
-        <source src="./src/img/music.mp4" type="audio/mp4" />
-        <source src="../img/music.mp4" type="audio/mp4" />
-      </audio>
+        src="/music/music.mp4"
+      />
     </div>
   );
 };
